@@ -1,0 +1,10 @@
+[package]
+name = "wfupdate"
+version = "0.1.0"
+authors = ["Zeke Sonxx <zeke@zekesonxx.com>"]
+publish = false
+
+[dependencies]
+regex = "0.1.73"
+lazy_static = "0.2.1"
+bytesize = "0.1.1"

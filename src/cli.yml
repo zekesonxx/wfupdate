@@ -1,0 +1,8 @@
+name: wfupdate
+version: 0.1.0
+about: Warframe log parser
+args:
+    - INPUT:
+        help: The Preprocess.log file to parse
+        required: false
+        index: 1

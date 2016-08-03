@@ -1,4 +1,5 @@
 #[macro_use] extern crate lazy_static;
+#[macro_use] extern crate clap;
 extern crate bytesize;
 pub mod logparser;
 
@@ -8,6 +9,7 @@ use std::io::prelude::*;
 use std::path::Path;
 use logparser::LogLine;
 use bytesize::ByteSize;
+use clap::App;
 
 
 fn percentage(amount: u64, total: u64) -> String {
@@ -22,18 +24,24 @@ fn percentage(amount: u64, total: u64) -> String {
 }
 
 fn main() {
+
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+
     // Create a path to the desired file
-    let path = Path::new("Preprocess.log");
-    //let path = Path::new("/home/zekesonxx/.PlayOnLinux/wineprefix/warframe/drive_c/users/zekesonxx/Local Settings/Application Data/Warframe/Preprocess.log");
+    let path = Path::new(matches.value_of("INPUT").unwrap_or("Preprocess.log"));
     let display = path.display();
 
     // Open the path in read-only mode, returns `io::Result<File>`
-    let mut file = match File::open(&path) {
-        // The `description` method of `io::Error` returns a string that
-        // describes the error
-        Err(why) => panic!("couldn't open {}: {}", display,
-                                                   why.description()),
-        Ok(file) => file,
+    let mut file;
+    match File::open(&path) {
+        Err(_) => {
+            println!("couldn't open {}, see --help for help", display);
+            return;
+        },
+        Ok(handle) => {
+            file = handle
+        },
     };
 
     // Read the file contents into a string, returns `io::Result<usize>`

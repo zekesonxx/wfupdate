@@ -44,13 +44,12 @@ fn main() {
         Ok(_) => {}
     }
 
-    //let mut lines: Vec<LogLine> = Vec::with_capacity(s.lines().count());
     let mut total_bytes: u64 = 0;
     let mut downloaded_bytes: u64 = 0;
     let mut total_files: u64 = 0;
     let mut downloaded_files: u64 = 0;
-    for line in s.lines() {
-        let result = logparser::parse_line(line);
+    let parsed = logparser::parse_lines(s.as_str());
+    for result in parsed {
         match result {
             LogLine::HashMismatch(_) => {
                 total_files += 1;
@@ -64,8 +63,8 @@ fn main() {
             },
             LogLine::Unknown(_) => {}
         }
-        //lines.push(result);
     }
+
     let bytes = format!("bytes: {}/{} {}%", ByteSize::b(downloaded_bytes as usize), ByteSize::b(total_bytes as usize), percentage(downloaded_bytes, total_bytes));
     let filecount = format!("files: {}/{} {}%", downloaded_files, total_files, percentage(downloaded_files, total_files));
     println!("{}; {}", bytes, filecount);

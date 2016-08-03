@@ -117,6 +117,30 @@ pub fn parse_line(line: &str) -> LogLine {
     LogLine::Unknown(String::from(""))
 }
 
+
+/// Parses a multi-line block of text and returns a vector of LogLines.
+/// This preserves the order of the lines, but isn't any faster than iterating over it yourself.
+///
+/// (in fact it very well might be slower depending on how you're doing things)
+///
+/// It's mainly just a convenience thing.
+pub fn parse_lines(input: &str) -> Vec<LogLine> {
+    let iter = input.lines();
+    let (_, i) = iter.size_hint();
+    let mut output: Vec<LogLine>;
+    //this weirdness is so we can make the vector as big as needed to begin with
+    //so that we don't need to cause Rust to keep reallocating memory
+    if let Some(length) = i {
+        output = Vec::with_capacity(length);
+    } else {
+        output = vec![];
+    }
+    for line in iter {
+        output.push(parse_line(line));
+    }
+    output
+}
+
 #[cfg(test)]
 mod tests {
 

@@ -22,7 +22,7 @@
 //! ```
 //!
 //! These occur very early in the log, and represent the launcher downloading file lists, which it uses to do the later hash mismatches.
-//! At the moment wfupdate doesn't distinugish against these lines, but it probably should.
+//! At the moment wfupdate doesn't distinguish against these lines, but it probably should.
 //!
 //! # Output
 //! The above lines, parsed, would equal these returned LogLines:

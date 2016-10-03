@@ -10,8 +10,8 @@ use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
-use std::process::Stdio;
-use std::path::{Path, PathBuf};
+use std::process::{Stdio, exit};
+use std::path::PathBuf;
 use logparser::LogLine;
 use bytesize::ByteSize;
 use clap::App;
@@ -59,6 +59,7 @@ fn display_parsed(parsed: &Vec<LogLine>) {
 }
 
 fn update_game(wfpath: PathBuf) {
+    let mut parsed: Vec<LogLine> = vec![];
     let mut program = match wine::build_game_update(wfpath)
     .stdout(Stdio::piped())
     .spawn() {
@@ -68,7 +69,6 @@ fn update_game(wfpath: PathBuf) {
             return;
         },
     };
-    let mut parsed: Vec<LogLine> = vec![];
     match program.stdout.as_mut() {
         Some(out) => {
             let buf_reader = BufReader::new(out);
@@ -76,8 +76,12 @@ fn update_game(wfpath: PathBuf) {
                 match line {
                     Ok(l) => {
                         println!("{}", l);
-                        parsed.push(logparser::parse_line(l.as_str()));
-                        display_parsed(&parsed);
+                        let parsedline = logparser::parse_line(l.as_str());
+                        if let LogLine::Unknown(_) = parsedline {
+                        } else {
+                            parsed.push(parsedline);
+                            display_parsed(&parsed);
+                        }
                     },
                     Err(_) => return,
                 };
@@ -101,7 +105,7 @@ fn parse_file(path: PathBuf) {
     match File::open(&path) {
         Err(_) => {
             println!("couldn't open {}, see --help for help", display);
-            return;
+            exit(1);
         },
         Ok(handle) => {
             file = handle
@@ -138,13 +142,22 @@ fn main() {
         };
         parse_file(path);
         return;
+    } else if let Some(matches) = matches.subcommand_matches("wine-ver") {
+        for (version, path) in wine::build_wine_versions_list() {
+            if matches.is_present("paths") {
+                println!("{}: {:?}", version, path);
+            } else {
+                println!("{}", version);
+            }
+        }
+        return;
     }
 
     let wfpath = match paths::guess_game_install_dir_from_wineprefix() {
         Some(path) => path,
         None => {
             println!("Can't find Warframe! Is $WINEPREFIX set?");
-            return;
+            exit(1);
         }
     };
 
@@ -153,6 +166,4 @@ fn main() {
     } else if let Some(_) = matches.subcommand_matches("run") {
         run_game(wfpath);
     }
-
-
 }

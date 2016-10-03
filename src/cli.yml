@@ -8,9 +8,25 @@ subcommands:
   - parse:
       about: Parses a Preprocess.log file for information
       args:
-          - INPUT:
-              help: The Preprocess.log file to parse
-              required: false
-              index: 1
+        - INPUT:
+            help: The Preprocess.log file to parse
+            required: false
+            index: 1
   - run:
       about: Runs Warframe
+      args:
+        - mumble:
+            long: mumble
+            help: Find and include the Mumble overlay (not implemented)
+        - silent:
+            short: s
+            long: silent
+            help: Don't output Warframe's stdout/stderr (not implemented)
+  - wine-ver:
+      about: Lists available Wine versions
+      args:
+        - paths:
+            short: p
+            long: paths
+            help: Include Wine paths in the output
+            required: false

@@ -3,6 +3,7 @@
 use std::env;
 use std::process::Command;
 use std::path::PathBuf;
+use std::collections::HashMap;
 
 pub fn find_wine_binary() -> PathBuf {
     match env::var("WINE").or(env::var("WARFRAMEWINE")) {
@@ -14,8 +15,56 @@ pub fn find_wine_binary() -> PathBuf {
         },
         Err(_) => {}
     }
-    build_game_update(PathBuf::from("cats"));
     PathBuf::from("/usr/bin/wine")
+}
+
+fn get_wine_version(wine: &PathBuf) -> Option<String> {
+    match Command::new(wine).arg("--version").output() {
+        Ok(output) => {
+            match String::from_utf8(output.stdout) {
+                Ok(s) => Some(s.trim_right().split_at(5).1.to_string()),
+                Err(_) => None
+            }
+        },
+        Err(_) => None
+    }
+}
+
+pub fn build_wine_versions_list() -> HashMap<String, PathBuf> {
+    let mut wines = HashMap::new();
+    macro_rules! trywine {
+        ($path: expr) => (
+            let path = $path;
+            match get_wine_version(&path) {
+                Some(version) => {wines.insert(version, path);},
+                None => {}
+            }
+        )
+    }
+    trywine!(PathBuf::from("/usr/bin/wine"));
+    if let Some(homedir) = env::home_dir() {
+        //Let's check PoL
+        let mut pol: PathBuf = homedir.clone();
+        pol.push(".PlayOnLinux");
+        pol.push("wine");
+        pol.push("linux-x86");
+        if pol.metadata().is_ok() {
+            //PoL exists, let's see what it has.
+            let iter = pol.read_dir();
+            if iter.is_ok() {
+                for dir in iter.unwrap() {
+                    if let Ok(metadata) = dir {
+                        let mut path = pol.clone();
+                        path.push(metadata.path());
+                        path.push("bin");
+                        path.push("wine");
+                        trywine!(path);
+                    }
+                }
+            }
+        }
+    }
+    wines
 }
 
 pub fn base_game_command(gamedir: PathBuf) -> Command {

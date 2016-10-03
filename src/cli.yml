@@ -1,8 +1,16 @@
 name: wfupdate
 version: 0.1.0
-about: Warframe log parser
-args:
-    - INPUT:
-        help: The Preprocess.log file to parse
-        required: false
-        index: 1
+about: Warframe Dealwither
+setting: ArgRequiredElseHelp
+subcommands:
+  - update:
+      about: Wraps Warframe and updates the game
+  - parse:
+      about: Parses a Preprocess.log file for information
+      args:
+          - INPUT:
+              help: The Preprocess.log file to parse
+              required: false
+              index: 1
+  - run:
+      about: Runs Warframe

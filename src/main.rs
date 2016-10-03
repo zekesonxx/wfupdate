@@ -1,16 +1,25 @@
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate clap;
 extern crate bytesize;
+extern crate users;
 pub mod logparser;
+pub mod paths;
+pub mod wine;
 
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::Path;
+use std::io::BufReader;
+use std::process::Stdio;
+use std::path::{Path, PathBuf};
 use logparser::LogLine;
 use bytesize::ByteSize;
 use clap::App;
 
+// Update:
+// "C:\Program Files\Warframe\Downloaded\Public\Warframe.exe" -silent -log:/Preprocess.log -dx10:0 -dx11:0 -threadedworker:1 -cluster:public -language:en -applet:/EE/Types/Framework/ContentUpdate
+// Run:
+// "C:\Program Files\Warframe\Downloaded\Public\Warframe.exe" -dx10:0 -dx11:0 -threadedworker:1 -cluster:public -language:en -fullscreen:0
 
 fn percentage(amount: u64, total: u64) -> String {
     if total == 0 {
@@ -23,15 +32,70 @@ fn percentage(amount: u64, total: u64) -> String {
     output
 }
 
-fn main() {
+fn display_parsed(parsed: &Vec<LogLine>) {
+    let mut total_bytes: u64 = 0;
+    let mut downloaded_bytes: u64 = 0;
+    let mut total_files: u64 = 0;
+    let mut downloaded_files: u64 = 0;
+    for result in parsed {
+        match result {
+            &LogLine::HashMismatch(_) => {
+                total_files += 1;
+            },
+            &LogLine::BytesToDownload(bytes) => {
+                total_bytes = bytes;
+            },
+            &LogLine::UsedShared(size, _) => {
+                downloaded_bytes += size;
+                downloaded_files += 1;
+            },
+            &LogLine::Unknown(_) => {}
+        }
+    }
 
-    let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let bytes = format!("bytes: {}/{} {}%", ByteSize::b(downloaded_bytes as usize), ByteSize::b(total_bytes as usize), percentage(downloaded_bytes, total_bytes));
+    let filecount = format!("files: {}/{} {}%", downloaded_files, total_files, percentage(downloaded_files, total_files));
+    println!("{}; {}", bytes, filecount);
+}
 
-    // Create a path to the desired file
-    let path = Path::new(matches.value_of("INPUT").unwrap_or("Preprocess.log"));
+fn update_game(wfpath: PathBuf) {
+    let mut program = match wine::build_game_update(wfpath)
+    .stdout(Stdio::piped())
+    .spawn() {
+        Ok(child) => child,
+        Err(_) => {
+            println!("Cannot run Warframe to update");
+            return;
+        },
+    };
+    let mut parsed: Vec<LogLine> = vec![];
+    match program.stdout.as_mut() {
+        Some(out) => {
+            let buf_reader = BufReader::new(out);
+            for line in buf_reader.lines() {
+                match line {
+                    Ok(l) => {
+                        println!("{}", l);
+                        parsed.push(logparser::parse_line(l.as_str()));
+                        display_parsed(&parsed);
+                    },
+                    Err(_) => return,
+                };
+            }
+        },
+        None => return,
+    }
+}
+
+fn run_game(wfpath: PathBuf) -> ! {
+    use std::os::unix::process::CommandExt;
+    let mut program = wine::build_game_run(wfpath);
+    program.exec();
+    panic!("Couldn't run Warframe");
+}
+
+fn parse_file(path: PathBuf) {
     let display = path.display();
-
     // Open the path in read-only mode, returns `io::Result<File>`
     let mut file;
     match File::open(&path) {
@@ -52,29 +116,43 @@ fn main() {
         Ok(_) => {}
     }
 
-    let mut total_bytes: u64 = 0;
-    let mut downloaded_bytes: u64 = 0;
-    let mut total_files: u64 = 0;
-    let mut downloaded_files: u64 = 0;
     let parsed = logparser::parse_lines(s.as_str());
-    for result in parsed {
-        match result {
-            LogLine::HashMismatch(_) => {
-                total_files += 1;
-            },
-            LogLine::BytesToDownload(bytes) => {
-                total_bytes = bytes;
-            },
-            LogLine::UsedShared(size, _) => {
-                downloaded_bytes += size;
-                downloaded_files += 1;
-            },
-            LogLine::Unknown(_) => {}
-        }
+    display_parsed(&parsed);
+}
+
+fn main() {
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+
+    if let Some(matches) = matches.subcommand_matches("parse") {
+        // Create a path to the desired file
+        let path = match matches.value_of("INPUT") {
+            Some(p) => PathBuf::from(p),
+            None => match paths::guess_log_folder_from_wineprefix() {
+                Some(mut p) => {
+                    p.push("Preprocess.log");
+                    p
+                },
+                None => PathBuf::from("Preprocess.log")
+            }
+        };
+        parse_file(path);
+        return;
     }
 
-    let bytes = format!("bytes: {}/{} {}%", ByteSize::b(downloaded_bytes as usize), ByteSize::b(total_bytes as usize), percentage(downloaded_bytes, total_bytes));
-    let filecount = format!("files: {}/{} {}%", downloaded_files, total_files, percentage(downloaded_files, total_files));
-    println!("{}; {}", bytes, filecount);
+    let wfpath = match paths::guess_game_install_dir_from_wineprefix() {
+        Some(path) => path,
+        None => {
+            println!("Can't find Warframe! Is $WINEPREFIX set?");
+            return;
+        }
+    };
+
+    if let Some(_) = matches.subcommand_matches("update") {
+        update_game(wfpath);
+    } else if let Some(_) = matches.subcommand_matches("run") {
+        run_game(wfpath);
+    }
+
 
 }

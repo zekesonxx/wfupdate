@@ -1,15 +1,16 @@
 [package]
-name = "wfupdate"
-version = "0.1.0"
 authors = ["Zeke Sonxx <zeke@zekesonxx.com>"]
+name = "wfupdate"
 publish = false
+version = "0.1.0"
 
 [dependencies]
-regex = "0.1.73"
-lazy_static = "0.2.1"
 bytesize = "0.1.1"
+lazy_static = "0.2.1"
+regex = "0.1.73"
+users = "0.5.2"
 
 [dependencies.clap]
-version = "2"
 default-features = false
 features = ["color", "yaml"]
+version = "2"

@@ -2,9 +2,15 @@
 #[macro_use] extern crate clap;
 extern crate bytesize;
 extern crate users;
+extern crate hyper;
+extern crate rand;
+extern crate lzma;
+extern crate crypto;
+extern crate hex;
 pub mod logparser;
 pub mod paths;
 pub mod wine;
+pub mod exeupdate;
 
 use std::error::Error;
 use std::fs::File;
@@ -17,7 +23,8 @@ use bytesize::ByteSize;
 use clap::App;
 
 // Update:
-// "C:\Program Files\Warframe\Downloaded\Public\Warframe.exe" -silent -log:/Preprocess.log -dx10:0 -dx11:0 -threadedworker:1 -cluster:public -language:en -applet:/EE/Types/Framework/ContentUpdate
+// "C:\Program Files\Warframe\Downloaded\Public\Warframe.exe" -silent -log:/Preprocess.log -dx10:0 -dx11:0
+// -threadedworker:1 -cluster:public -language:en -applet:/EE/Types/Framework/ContentUpdate
 // Run:
 // "C:\Program Files\Warframe\Downloaded\Public\Warframe.exe" -dx10:0 -dx11:0 -threadedworker:1 -cluster:public -language:en -fullscreen:0
 
@@ -72,13 +79,21 @@ fn update_game(wfpath: PathBuf) {
     match program.stdout.as_mut() {
         Some(out) => {
             let buf_reader = BufReader::new(out);
+            println!("got bufreader");
             for line in buf_reader.lines() {
                 match line {
                     Ok(l) => {
                         println!("{}", l);
                         let parsedline = logparser::parse_line(l.as_str());
+                        let mut parse = true;
                         if let LogLine::Unknown(_) = parsedline {
-                        } else {
+                            parse = false;
+                        } else if let LogLine::UsedShared(_, ref name) = parsedline {
+                            if name.ends_with(".bin") {
+                                parse = false;
+                            }
+                        }
+                        if parse {
                             parsed.push(parsedline);
                             display_parsed(&parsed);
                         }
@@ -124,6 +139,60 @@ fn parse_file(path: PathBuf) {
     display_parsed(&parsed);
 }
 
+fn checkupdate(matches: &clap::ArgMatches) {
+    use exeupdate::FileType::*;
+    let index = match exeupdate::downloader::get_index() {
+        Ok(index) => index,
+        Err(_) => {
+            println!("Failed to get Warframe file list. Are you connected to the internet?");
+            exit(1);
+        }
+    };
+    let parsed = match exeupdate::parser::parse_file_list(index) {
+        Ok(list) => list,
+        Err(_) => {
+            println!("Failed to parse Warframe file list. Did DE change something?");
+            exit(1);
+        }
+    };
+    let verbose = matches.is_present("verbose");
+    for item in parsed {
+        let check = match exeupdate::parser::categorize(&item) {
+            Exe32Bit | LauncherAsset => true,
+            SteamAsset => matches.is_present("steam"),
+            GameAsset => matches.is_present("full"),
+            Exe64Bit => matches.is_present("64bit"),
+            Unknown => true
+        } || matches.is_present("full");
+        let display_path = item.disk_path.clone();
+        if !check {
+            if verbose {
+                println!("SKIP {}", display_path);
+            }
+        } else {
+            match exeupdate::checker::check_file(&item) {
+                Ok(needs_update) => {
+                    if needs_update {
+                        if verbose {
+                            println!("OUTD {}", display_path); //uptodate outofdate
+                        } else {
+                            println!("{}", display_path);
+                        }
+                    } else {
+                        if verbose {
+                            println!("OK   {}", display_path);
+                        }
+                    }
+                },
+                Err(err) => {
+                    println!("ERR  {}", display_path);
+                    println!("     {}", err);
+                }
+            }
+        }
+    }
+}
+
 fn main() {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
@@ -165,5 +234,7 @@ fn main() {
         update_game(wfpath);
     } else if let Some(_) = matches.subcommand_matches("run") {
         run_game(wfpath);
+    } else if let Some(matches) = matches.subcommand_matches("checkupdate") {
+        checkupdate(matches);
     }
 }

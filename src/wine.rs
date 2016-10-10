@@ -86,7 +86,7 @@ pub fn base_game_command(gamedir: PathBuf) -> Command {
 // "C:\Program Files\Warframe\Downloaded\Public\Warframe.exe" -silent -log:/Preprocess.log -dx10:0 -dx11:0 -threadedworker:1 -cluster:public -language:en -applet:/EE/Types/Framework/ContentUpdate
 pub fn build_game_update(gamedir: PathBuf) -> Command {
     let mut cmd = base_game_command(gamedir);
-    cmd.arg("-silent").arg("-applet:/EE/Types/Framework/ContentUpdate");
+    cmd.arg("-applet:/EE/Types/Framework/ContentUpdate");
     cmd
 }
 

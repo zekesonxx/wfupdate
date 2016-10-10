@@ -6,8 +6,13 @@ version = "0.1.0"
 
 [dependencies]
 bytesize = "0.1.1"
+hex = "0.2.0"
+hyper = "0.9.10"
 lazy_static = "0.2.1"
+lzma = "0.2.2"
+rand = "0.3.14"
 regex = "0.1.73"
+rust-crypto = "0.2.36"
 users = "0.5.2"
 
 [dependencies.clap]

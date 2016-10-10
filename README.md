@@ -12,22 +12,39 @@ I've stuck a xz-compressed copy of a log I've been using to test [here](https://
 # Progress
 * Meta
   * [ ] Config File
+  * [ ] Threading
 * [x] Parse Warframe log outputs
   * [ ] Refine log parsing code to be smoother
 * [ ] Launcherless:
   * [x] Game playing
-  * [x] Updating
+  * [ ] Updating
+    * [ ] Stage 1 Updating (replacing `Launcher.exe`)
+      * [x] Checking which files need updates
+      * [ ] Updating those files
+    * [x] Stage 2 Updating (running `Warframe.exe`)
+      * [ ] Automatic restart if the download stalls
   * [ ] Repairing
-  * [ ] "Optimizing"
-* [ ] Launcher:
-  * [ ] Running
-  * [ ] Handling `Launcher.exe.tmp`
+  * [ ] "Optimizing", whatever the fuck that is
+* [ ] ~~Launcher:~~
+  * Not needed, thanks to REing the launcher protocol.
+  * Should be able to operate 100% Launcherless
 * [ ] GUI
   * [ ] Basic GUI
   * [ ] Setup Wizard
+  * [ ] Editing game settings (video, chat, etc)
 * [ ] Setup in clean wineprefix from scratch
   * [ ] Make a wineprefix
   * [ ] Run winetricks to install dependencies
   * [ ] Run `Warframe.msi` w/ user prompts
+    * Uh, maybe.
+    * Can setup all the necessary files without the msi
+    * Does the game care about the registry?
+    * Research needed
+    * If it does care, can we manipulate the registry in our favor somehow?
+    * And, if it does care, should we have a secondary Wine-side binary, or should we use Wine regedit to change things?
   * [ ] Use custom Wine versions (grab from PoL?)
   * [ ] PlayOnLinux integration
+* [ ] Windows support
+  * [ ] Disable Wine selection/managing in Windows
+  * [ ] Run the game directly, without going through Wine
+  * [ ] Deal with the lack of execvp(3)

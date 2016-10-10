@@ -30,3 +30,21 @@ subcommands:
             long: paths
             help: Include Wine paths in the output
             required: false
+  - checkupdate:
+      about: Outputs a list of files that need to be updated
+      args:
+        - full:
+            long: full
+            help: Check Warframe game assets as well. This involves md5 hashing over 35GB! Use with caution.
+        - verbose:
+            short: v
+            long: verbose
+            help: Output information about all files checked, instead of just outputting ones that need updates.
+        - 64bit:
+            short: "6"
+            long: 64bit
+            help: Check for 64-bit files, not just 32-bit ones
+        - steam:
+            short: s
+            long: steam
+            help: Check for updates with Steam-related files.

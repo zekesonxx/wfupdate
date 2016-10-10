@@ -61,3 +61,23 @@ pub fn guess_game_install_dir_from_wineprefix() -> Option<PathBuf> {
         Err(_) => None
     }
 }
+
+pub fn realize_path(input: String) -> Option<PathBuf> {
+    if input.starts_with("/Tools/CEF3_1") || input.starts_with("/Tools/Launcher.exe") {
+        //Launcher file
+        let mut out = match guess_log_folder_from_wineprefix() {
+            Some(path) => path,
+            None => return None
+        };
+        out.push("Downloaded/Public/");
+        out.push(input.split_at(1).1);
+        Some(out)
+    } else {
+        let mut out = match guess_game_install_dir_from_wineprefix() {
+            Some(path) => path,
+            None => return None
+        };
+        out.push(input.split_at(1).1);
+        Some(out)
+    }
+}

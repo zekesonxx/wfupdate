@@ -44,9 +44,6 @@ pub fn check_file(file: &super::File) -> io::Result<bool> {
 pub fn check_files(files: Vec<super::File>) -> io::Result<Vec<super::File>> {
     let mut needs_update = vec![];
     for file in files {
-        if file.disk_path.contains("x64") || file.disk_path.contains("Language") || file.disk_path.contains("Cache.Windows") {
-            continue;
-        }
         match check_file(&file) {
             Err(e) => return Err(e),
             Ok(to_update) => {

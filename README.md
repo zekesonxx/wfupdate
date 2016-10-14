@@ -23,6 +23,7 @@ I've stuck a xz-compressed copy of a log I've been using to test [here](https://
       * [ ] Updating those files
     * [x] Stage 2 Updating (running `Warframe.exe`)
       * [ ] Automatic restart if the download stalls
+    * [ ] Git tracking of file changes
   * [ ] Repairing
   * [ ] "Optimizing", whatever the fuck that is
 * [ ] ~~Launcher:~~

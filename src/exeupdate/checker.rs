@@ -1,3 +1,7 @@
+//! Warframe File Checker
+//!
+//! This file is responsible for checking each file, parsed out of the Launcher index, and seeing if it needs to be updated.
+
 use super::super::paths;
 use std::io;
 use std::fs::File;
@@ -6,6 +10,9 @@ use std::io::BufReader;
 use crypto::md5::Md5;
 use crypto::digest::Digest;
 
+/// Directly check a file, bypassing path realization.
+///
+/// You shouldn't ever need to use this directly.
 pub fn direct_check_file(file: &super::File) -> io::Result<bool> {
     let f = match File::open(file.disk_path.clone()) {
         Ok(f) => f,
@@ -30,7 +37,17 @@ pub fn direct_check_file(file: &super::File) -> io::Result<bool> {
     Ok(result != file.md5sum.as_slice())
 }
 
-
+/// Check if a file needs to be updated.
+///
+/// This function will automatically realize paths, for example:
+/// `/Warframe.exe` will be realized to `$PROGRAMFILES/Warframe/Downloaded/Public/Warframe.exe`<br/>
+/// or<br/>
+/// `/Tools/Launcher.exe` will be realized to
+/// `/users/$USERNAME/Local Settings/Application Data/Warframe/Downloaded/Public/Tools/Launcher.exe`
+///
+/// (see more about path realization in `paths::realize_path()`)
+///
+/// This function performs file I/O and will be MD5 hashing the file in question.
 pub fn check_file(file: &super::File) -> io::Result<bool> {
     let mut file = file.clone();
     file.disk_path = match paths::realize_path(file.disk_path) {
@@ -41,6 +58,9 @@ pub fn check_file(file: &super::File) -> io::Result<bool> {
 }
 
 
+/// Conveience function to loop over a File vector.
+///
+/// Returns a vector of the files that need to be updated
 pub fn check_files(files: Vec<super::File>) -> io::Result<Vec<super::File>> {
     let mut needs_update = vec![];
     for file in files {

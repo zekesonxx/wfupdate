@@ -13,7 +13,9 @@ lzma = "0.2.2"
 rand = "0.3.14"
 regex = "0.1.73"
 rust-crypto = "0.2.36"
+rust-ini = "0.9.9"
 users = "0.5.2"
+xdg = "2.0.0"
 
 [dependencies.clap]
 default-features = false

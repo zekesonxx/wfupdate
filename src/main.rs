@@ -7,10 +7,14 @@ extern crate rand;
 extern crate lzma;
 extern crate crypto;
 extern crate hex;
+extern crate xdg;
+extern crate ini;
 pub mod logparser;
 pub mod paths;
 pub mod wine;
 pub mod exeupdate;
+pub mod config;
+pub mod cli;
 
 use std::error::Error;
 use std::fs::{File, create_dir_all};
@@ -210,7 +214,6 @@ fn exeupdate(matches: &clap::ArgMatches) {
             exit(1);
         }
     };
-    let verbose = matches.is_present("verbose");
     let mut to_update: Vec<exeupdate::File> = vec![];
     println!("Checking files...");
     for item in parsed {
@@ -265,6 +268,12 @@ fn exeupdate(matches: &clap::ArgMatches) {
 }
 
 fn main() {
+    //let mut config = config::get();
+    //config.set_to(Some("wine"), "wineprefix".to_string(), "/media/betterstorage/Other Games/warframe_try2".to_string());
+    //config::set(config);
+    //println!("{:?}", config::parse_configid("wine:wineprefix"));
+    //println!("{:?}", config::parse_configid("encoding"));
+    //println!("{:?}", config::parse_configid("game:dx10"));
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
 
@@ -307,7 +316,21 @@ fn main() {
         run_game(wfpath);
     } else if let Some(matches) = matches.subcommand_matches("checkupdate") {
         checkupdate(matches);
-    }else if let Some(matches) = matches.subcommand_matches("exeupdate") {
+    } else if let Some(matches) = matches.subcommand_matches("exeupdate") {
         exeupdate(matches);
+    } else if let Some(matches) = matches.subcommand_matches("config-get") {
+        let parsed = config::parse_configid(matches.value_of("key").unwrap());
+        let config = config::get();
+        match config.get_from(parsed.0, parsed.1.as_str()) {
+            Some(k) => println!("{}", k),
+            None => exit(1)
+        }
+        //config.set_to(Some("wine"), "wineprefix".to_string(), "/media/betterstorage/Other Games/warframe_try2".to_string());
+        //config::set(config);
+    } else if let Some(matches) = matches.subcommand_matches("config-set") {
+        let parsed = config::parse_configid(matches.value_of("key").unwrap());
+        let mut config = config::get();
+        config.set_to(parsed.0, parsed.1, matches.value_of("value").unwrap().to_string());
+        config::set(config);
     }
 }

@@ -52,7 +52,7 @@ I've stuck a xz-compressed copy of a log I've been using to test [here](https://
 
 
 # Semi-In-Order TODO List
-* [ ] Implement a config file
+* [x] Implement a config file
 * [ ] Rework the `paths` module
 * [ ] Merge the `wine` module into the reworked `paths` module (+ allow for future Windows support)
 * [ ] Rework the CLI with two-tiered subcommands, split into `cli` module

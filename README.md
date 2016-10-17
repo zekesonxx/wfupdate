@@ -18,9 +18,9 @@ I've stuck a xz-compressed copy of a log I've been using to test [here](https://
 * [ ] Launcherless:
   * [x] Game playing
   * [ ] Updating
-    * [ ] Stage 1 Updating (replacing `Launcher.exe`)
+    * [x] Stage 1 Updating (replacing `Launcher.exe`)
       * [x] Checking which files need updates
-      * [ ] Updating those files
+      * [x] Updating those files
     * [x] Stage 2 Updating (running `Warframe.exe`)
       * [ ] Automatic restart if the download stalls
     * [ ] Git tracking of file changes
@@ -49,3 +49,13 @@ I've stuck a xz-compressed copy of a log I've been using to test [here](https://
   * [ ] Disable Wine selection/managing in Windows
   * [ ] Run the game directly, without going through Wine
   * [ ] Deal with the lack of execvp(3)
+
+
+# Semi-In-Order TODO List
+* [ ] Implement a config file
+* [ ] Rework the `paths` module
+* [ ] Merge the `wine` module into the reworked `paths` module (+ allow for future Windows support)
+* [ ] Rework the CLI with two-tiered subcommands, split into `cli` module
+* [ ] Wine version selection
+* [ ] 32bit/64bit switch
+* [ ] DX10/11 switches

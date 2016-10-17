@@ -8,6 +8,7 @@
 pub mod parser;
 pub mod downloader;
 pub mod checker;
+pub mod update;
 pub use self::parser::FileType;
 
 

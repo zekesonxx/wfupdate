@@ -13,7 +13,7 @@ pub mod wine;
 pub mod exeupdate;
 
 use std::error::Error;
-use std::fs::File;
+use std::fs::{File, create_dir_all};
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::process::{Stdio, exit};
@@ -193,6 +193,77 @@ fn checkupdate(matches: &clap::ArgMatches) {
     }
 }
 
+fn exeupdate(matches: &clap::ArgMatches) {
+    use exeupdate::FileType::*;
+    println!("Downloading file list...");
+    let index = match exeupdate::downloader::get_index() {
+        Ok(index) => index,
+        Err(_) => {
+            println!("Failed to get Warframe file list. Are you connected to the internet?");
+            exit(1);
+        }
+    };
+    let parsed = match exeupdate::parser::parse_file_list(index) {
+        Ok(list) => list,
+        Err(_) => {
+            println!("Failed to parse Warframe file list. Did DE change something?");
+            exit(1);
+        }
+    };
+    let verbose = matches.is_present("verbose");
+    let mut to_update: Vec<exeupdate::File> = vec![];
+    println!("Checking files...");
+    for item in parsed {
+        let check = match exeupdate::parser::categorize(&item) {
+            Exe32Bit | LauncherAsset => true,
+            SteamAsset => matches.is_present("steam"),
+            GameAsset => matches.is_present("full"),
+            Exe64Bit => matches.is_present("64bit"),
+            Unknown => true
+        } || matches.is_present("full");
+        let display_path = item.disk_path.clone();
+        if check {
+            match exeupdate::checker::check_file(&item) {
+                Ok(needs_update) => {
+                    if needs_update {
+                        to_update.push(item);
+                    }
+                },
+                Err(err) => {
+                    println!("Failed to check {}", display_path);
+                    println!("{}", err);
+                }
+            }
+        }
+    }
+    println!("{} file{} to update", to_update.len(), if to_update.len() != 1 {"s"} else {""});
+    for file in to_update {
+        let display = file.disk_path.clone();
+        println!("Downloading {} ({})", display, bytesize::ByteSize::b(file.size as usize));
+        let newcontent = match exeupdate::downloader::get_file(file.download_path) {
+            Ok(content) => content,
+            Err(err) => {
+                println!("Failed to download {}", display);
+                println!("{:?}", err);
+                exit(1);
+            }
+        };
+        println!("Applying updated file");
+        let disk_path = paths::realize_path(file.disk_path).unwrap();
+        create_dir_all(disk_path.parent().unwrap()).unwrap();
+        match exeupdate::update::update_file(disk_path, newcontent) {
+            Ok(_) => {
+                println!("File successfully updated");
+            },
+            Err(err) => {
+                println!("Failed to update {}", display);
+                println!("{:?}", err);
+                exit(1);
+            }
+        };
+    }
+}
+
 fn main() {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
@@ -236,5 +307,7 @@ fn main() {
         run_game(wfpath);
     } else if let Some(matches) = matches.subcommand_matches("checkupdate") {
         checkupdate(matches);
+    }else if let Some(matches) = matches.subcommand_matches("exeupdate") {
+        exeupdate(matches);
     }
 }

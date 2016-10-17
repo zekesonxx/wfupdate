@@ -14,7 +14,8 @@ pub mod paths;
 pub mod wine;
 pub mod exeupdate;
 pub mod config;
-pub mod cli;
+//pub mod cli;
+pub mod run;
 
 use std::error::Error;
 use std::fs::{File, create_dir_all};
@@ -112,7 +113,7 @@ fn update_game(wfpath: PathBuf) {
 
 fn run_game(wfpath: PathBuf) -> ! {
     use std::os::unix::process::CommandExt;
-    let mut program = wine::build_game_run(wfpath);
+    let mut program = run::build_game_run(wfpath);
     program.exec();
     panic!("Couldn't run Warframe");
 }
@@ -281,7 +282,7 @@ fn main() {
         // Create a path to the desired file
         let path = match matches.value_of("INPUT") {
             Some(p) => PathBuf::from(p),
-            None => match paths::guess_log_folder_from_wineprefix() {
+            None => match paths::launcher_dir() {
                 Some(mut p) => {
                     p.push("Preprocess.log");
                     p
@@ -302,7 +303,7 @@ fn main() {
         return;
     }
 
-    let wfpath = match paths::guess_game_install_dir_from_wineprefix() {
+    let wfpath = match paths::game_install_dir() {
         Some(path) => path,
         None => {
             println!("Can't find Warframe! Is $WINEPREFIX set?");

@@ -36,3 +36,10 @@ pub fn parse_configid(input: &str) -> (Option<String>, String) {
         }
     }
 }
+
+pub fn parse_bool(input: Option<&str>) -> bool {
+    match input {
+        Some("true") | Some("1") => true,
+        None | _ => false,
+    }
+}

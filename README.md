@@ -53,9 +53,12 @@ I've stuck a xz-compressed copy of a log I've been using to test [here](https://
 
 # Semi-In-Order TODO List
 * [x] Implement a config file
-* [ ] Rework the `paths` module
-* [ ] Merge the `wine` module into the reworked `paths` module (+ allow for future Windows support)
-* [ ] Rework the CLI with two-tiered subcommands, split into `cli` module
+* [x] Rework the `paths` module
+* [ ] Rework the `wine` module a `run` module (+ allow for future Windows support)
+  * [x] dx10, dx11, language
+  * [x] wineprefix setting
+  * [ ] wine executable setting
+  * [ ] 32bit/64bit switch
 * [ ] Wine version selection
-* [ ] 32bit/64bit switch
-* [ ] DX10/11 switches
+* [x] DX10/11 switches
+* [ ] Rework the CLI with two-tiered subcommands, split into `cli` module

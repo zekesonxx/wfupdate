@@ -9,6 +9,9 @@ Set them by running `wfupdate config-set <key> <value>`, ex `wfupdate config-set
 * `language`: Two-character language code to pass to the game (`en`, `de`, etc)
 * `64bit`: Run the game in 64-bit mode
 
+## wine
+* `wineprefix`: `WINEPREFIX` env var to use, for running the game and for finding paths. Defaults to the actual `WINEPREFIX` env var present when running wfupdate, and otherwise to `~/.wine` (use of default wineprefix not recommended).
+
 # Planned (these don't function yet)
 ## game
 * `mumble`: Load the Mumble overlay.
@@ -19,6 +22,5 @@ Set them by running `wfupdate config-set <key> <value>`, ex `wfupdate config-set
   I would recommend setting this to a reasonably high value relative to your Internet speed, in case it's downloading a big file. Setting this to 0 (or removing it) will disable automatic restarts.
 
 ## wine
-* `wineprefix`: `WINEPREFIX` env var to use, for running the game and for finding paths. Defaults to the actual `WINEPREFIX` env var present when running wfupdate, and otherwise to `~/.wine` (use of default wineprefix not recommended).
 * `winebin`: Path to the folder containing the Wine binaries to use to run the game. Defaults to `/usr/bin`.
 * `winelib`: Path to the folder or folders (separated with `:`) containing libraries Wine needs, which will be prepended to `LD_LIBRARY_PATH`. Defaults to nothing.

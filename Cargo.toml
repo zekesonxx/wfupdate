@@ -20,4 +20,4 @@ xdg = "2.0.0"
 [dependencies.clap]
 default-features = false
 features = ["color", "yaml"]
-version = "2"
+version = "2.15"

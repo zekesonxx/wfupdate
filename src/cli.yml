@@ -12,16 +12,6 @@ subcommands:
             help: The Preprocess.log file to parse
             required: false
             index: 1
-  - run:
-      about: Runs Warframe
-      args:
-        - mumble:
-            long: mumble
-            help: Find and include the Mumble overlay (not implemented)
-        - silent:
-            short: s
-            long: silent
-            help: Don't output Warframe's stdout/stderr (not implemented)
   - wine-ver:
       about: Lists available Wine versions
       args:

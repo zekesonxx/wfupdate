@@ -14,7 +14,7 @@ pub mod paths;
 pub mod wine;
 pub mod exeupdate;
 pub mod config;
-//pub mod cli;
+pub mod cli;
 pub mod run;
 
 use std::error::Error;
@@ -67,7 +67,7 @@ fn display_parsed(parsed: &Vec<LogLine>) {
 
     let bytes = format!("bytes: {}/{} {}%", ByteSize::b(downloaded_bytes as usize), ByteSize::b(total_bytes as usize), percentage(downloaded_bytes, total_bytes));
     let filecount = format!("files: {}/{} {}%", downloaded_files, total_files, percentage(downloaded_files, total_files));
-    println!("{}; {}", bytes, filecount);
+    print!("\x1b[0K\r{}; {}", bytes, filecount);
 }
 
 fn update_game(wfpath: PathBuf) {
@@ -84,7 +84,6 @@ fn update_game(wfpath: PathBuf) {
     match program.stdout.as_mut() {
         Some(out) => {
             let buf_reader = BufReader::new(out);
-            println!("got bufreader");
             for line in buf_reader.lines() {
                 match line {
                     Ok(l) => {
@@ -109,13 +108,6 @@ fn update_game(wfpath: PathBuf) {
         },
         None => return,
     }
-}
-
-fn run_game(wfpath: PathBuf) -> ! {
-    use std::os::unix::process::CommandExt;
-    let mut program = run::build_game_run(wfpath);
-    program.exec();
-    panic!("Couldn't run Warframe");
 }
 
 fn parse_file(path: PathBuf) {
@@ -276,7 +268,7 @@ fn main() {
     //println!("{:?}", config::parse_configid("encoding"));
     //println!("{:?}", config::parse_configid("game:dx10"));
     let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).subcommand(cli::run::subcommand()).get_matches();
 
     if let Some(matches) = matches.subcommand_matches("parse") {
         // Create a path to the desired file
@@ -313,8 +305,8 @@ fn main() {
 
     if let Some(_) = matches.subcommand_matches("update") {
         update_game(wfpath);
-    } else if let Some(_) = matches.subcommand_matches("run") {
-        run_game(wfpath);
+    } else if let Some(matches) = matches.subcommand_matches("run") {
+        cli::run::run(matches);
     } else if let Some(matches) = matches.subcommand_matches("checkupdate") {
         checkupdate(matches);
     } else if let Some(matches) = matches.subcommand_matches("exeupdate") {

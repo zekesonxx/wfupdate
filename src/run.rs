@@ -26,6 +26,13 @@ pub fn game_executable(gamedir: PathBuf) -> Command{
     cmd
 }
 
+#[cfg(unix)]
+pub fn launcher_executable(launcherpath: PathBuf) -> Command {
+    let mut cmd = Command::new(find_wine_binary());
+    cmd.arg(launcherpath.to_str().unwrap());
+    cmd
+}
+
 pub fn base_game_command(gamedir: PathBuf) -> Command {
     let mut cmd = game_executable(gamedir);
     let config = config::get();

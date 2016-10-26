@@ -25,6 +25,7 @@ pub fn game_executable(gamedir: PathBuf) -> Command{
     let mut cmd = Command::new(find_wine_binary());
     cmd.arg(gamedir.to_str().unwrap());
     cmd.env("WINEPREFIX", paths::wine::wineprefix().as_os_str());
+    cmd.env("WINEARCH", config.get_from(Some("wine"), "winearch").unwrap_or("win32"));
     cmd
 }
 
@@ -33,6 +34,7 @@ pub fn launcher_executable(launcherpath: PathBuf) -> Command {
     let mut cmd = Command::new(find_wine_binary());
     cmd.arg(launcherpath.to_str().unwrap());
     cmd.env("WINEPREFIX", paths::wine::wineprefix().as_os_str());
+    cmd.env("WINEARCH", config::get().get_from(Some("wine"), "winearch").unwrap_or("win32"));
     cmd
 }
 

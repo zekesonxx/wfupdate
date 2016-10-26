@@ -2,6 +2,7 @@ use std::env;
 use std::process::Command;
 use std::path::PathBuf;
 use config;
+use paths;
 
 pub fn find_wine_binary() -> PathBuf {
     match env::var("WINE").or(env::var("WARFRAMEWINE")) {
@@ -23,6 +24,7 @@ pub fn game_executable(gamedir: PathBuf) -> Command{
     gamedir.push(if config::parse_bool(config.get_from(Some("game"), "64bit")) {"Warframe.x64.exe"} else {"Warframe.exe"});
     let mut cmd = Command::new(find_wine_binary());
     cmd.arg(gamedir.to_str().unwrap());
+    cmd.env("WINEPREFIX", paths::wine::wineprefix().as_os_str());
     cmd
 }
 
@@ -30,6 +32,7 @@ pub fn game_executable(gamedir: PathBuf) -> Command{
 pub fn launcher_executable(launcherpath: PathBuf) -> Command {
     let mut cmd = Command::new(find_wine_binary());
     cmd.arg(launcherpath.to_str().unwrap());
+    cmd.env("WINEPREFIX", paths::wine::wineprefix().as_os_str());
     cmd
 }
 

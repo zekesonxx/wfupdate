@@ -87,7 +87,7 @@ fn update_game(wfpath: PathBuf) {
             for line in buf_reader.lines() {
                 match line {
                     Ok(l) => {
-                        println!("{}", l);
+                        //println!("{}", l);
                         let parsedline = logparser::parse_line(l.as_str());
                         let mut parse = true;
                         if let LogLine::Unknown(_) = parsedline {
@@ -268,7 +268,7 @@ fn main() {
     //println!("{:?}", config::parse_configid("encoding"));
     //println!("{:?}", config::parse_configid("game:dx10"));
     let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).subcommand(cli::run::subcommand()).get_matches();
+    let matches = App::from_yaml(yaml).subcommand(cli::run::subcommand()).subcommand(cli::config::subcommand()).get_matches();
 
     if let Some(matches) = matches.subcommand_matches("parse") {
         // Create a path to the desired file
@@ -307,23 +307,11 @@ fn main() {
         update_game(wfpath);
     } else if let Some(matches) = matches.subcommand_matches("run") {
         cli::run::run(matches);
+    } else if let Some(matches) = matches.subcommand_matches("config") {
+        cli::config::run(matches);
     } else if let Some(matches) = matches.subcommand_matches("checkupdate") {
         checkupdate(matches);
     } else if let Some(matches) = matches.subcommand_matches("exeupdate") {
         exeupdate(matches);
-    } else if let Some(matches) = matches.subcommand_matches("config-get") {
-        let parsed = config::parse_configid(matches.value_of("key").unwrap());
-        let config = config::get();
-        match config.get_from(parsed.0, parsed.1.as_str()) {
-            Some(k) => println!("{}", k),
-            None => exit(1)
-        }
-        //config.set_to(Some("wine"), "wineprefix".to_string(), "/media/betterstorage/Other Games/warframe_try2".to_string());
-        //config::set(config);
-    } else if let Some(matches) = matches.subcommand_matches("config-set") {
-        let parsed = config::parse_configid(matches.value_of("key").unwrap());
-        let mut config = config::get();
-        config.set_to(parsed.0, parsed.1, matches.value_of("value").unwrap().to_string());
-        config::set(config);
     }
 }

@@ -1,7 +1,7 @@
 # Config Options
 This is a list of config values wfupdate will care about.
 
-Set them by running `wfupdate config-set <key> <value>`, ex `wfupdate config-set game:dx10 false`.
+Set them by running `wfupdate config set <key> <value>`, ex `wfupdate config set game:dx10 false`.
 
 ## game
 * `dx10`: Enable DirectX 10 mode

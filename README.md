@@ -15,6 +15,9 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 * Can only deal with 32-bit Wine (despite the 64-bit Warframe executable switch and WINEARCH environment variables)
 * Wineserver needs to be running before trying to update the game
 
+##### *Past this point is sort of a mess. I use this README for planning and such, and this way it keeps it around in git.*
+
+
 # Progress
 * Meta
   * [x] Config File
@@ -74,3 +77,14 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
   * [ ] Housekeeping (repair/"optimize")
 * [ ] Game setup from scratch
 * [ ] GUI
+
+# CLI Release Checklist
+* [ ] Wine executable/LD_LIBRARY_PATH setting
+* [ ] Rework `update` into `cli` module
+* [ ] Add an update check for stage 2 (kill the game at BytesToDownload)
+* [ ] Rework `parse` into `cli` module
+* [ ] Add repair command
+* [ ] Fix up `wine-ver` into `wine`, get into `cli` module, implement setting to config vars
+* [ ] `wfupdate wine winecfg` or something like that
+* [ ] wineserver hosting (run in background as subcommand, stdout/err to /dev/null)
+* [ ] Basic usage guide

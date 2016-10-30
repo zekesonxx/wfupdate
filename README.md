@@ -13,6 +13,7 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 
 # Limitations/Gotchas
 * Can only deal with 32-bit Wine (despite the 64-bit Warframe executable switch and WINEARCH environment variables)
+* Wineserver needs to be running before trying to update the game
 
 # Progress
 * Meta

@@ -56,18 +56,3 @@ subcommands:
             short: s
             long: steam
             help: Check for updates with Steam-related files.
-  - config-set:
-      about: Sets a config option
-      args:
-        - key:
-            help: section:key or just key
-            required: true
-        - value:
-            help: The value to set to
-            required: true
-  - config-get:
-      about: Gets a config option
-      args:
-        - key:
-            help: section:key or just key
-            required: true

@@ -1,9 +1,12 @@
 use clap;
-use super::super::{config, wine};
+use super::super::{config, wine, run};
 use std::path::PathBuf;
+use std::os::unix::process::CommandExt;
 
 pub fn subcommand<'a, 'b>() -> clap::App<'a, 'b> {
     clap_app!(@subcommand wine =>
+        (about: "Wine-specific commands")
+        (@setting SubcommandRequiredElseHelp)
         (@subcommand list =>
             (about: "List available Wine versions")
             (@arg paths: -p --paths "Display the detected paths")
@@ -15,6 +18,9 @@ pub fn subcommand<'a, 'b>() -> clap::App<'a, 'b> {
         (@subcommand envvar =>
             (about: "Debug tool for Wine env vars, outputs a shell script")
             (@arg unset: -u --unset "Output a script to undo the effects of running envvar")
+        )
+        (@subcommand winecfg =>
+            (about: "Runs winecfg")
         )
     )
 }
@@ -46,6 +52,9 @@ pub fn run(matches: &clap::ArgMatches) {
                 }
             }
             println!("Couldn't find version \"{}\", does it show up in `wfupdate wine list`?", matches.value_of("version").unwrap());
+        },
+        ("winecfg", _) => {
+            run::wine_cmd().arg("winecfg").exec();
         },
         ("envvar", Some(matches)) => {
             let config = config::get();

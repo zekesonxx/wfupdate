@@ -85,6 +85,6 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 * [ ] Rework `parse` into `cli` module
 * [ ] Add repair command
 * [x] Fix up `wine-ver` into `wine`, get into `cli` module, implement setting to config vars
-* [ ] `wfupdate wine winecfg` or something like that
+* [x] `wfupdate wine winecfg` or something like that
 * [ ] wineserver hosting (run in background as subcommand, stdout/err to /dev/null)
 * [ ] Basic usage guide

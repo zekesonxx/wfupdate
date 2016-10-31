@@ -3,7 +3,6 @@
 use std::env;
 use std::process::Command;
 use std::path::PathBuf;
-use std::collections::HashMap;
 
 pub fn find_wine_binary() -> PathBuf {
     match env::var("WINE").or(env::var("WARFRAMEWINE")) {
@@ -19,6 +18,8 @@ pub fn find_wine_binary() -> PathBuf {
 }
 
 fn get_wine_version(wine: &PathBuf) -> Option<String> {
+    let mut wine = wine.clone();
+    wine.push("bin/wine");
     match Command::new(wine).arg("--version").output() {
         Ok(output) => {
             match String::from_utf8(output.stdout) {
@@ -30,18 +31,47 @@ fn get_wine_version(wine: &PathBuf) -> Option<String> {
     }
 }
 
-pub fn build_wine_versions_list() -> HashMap<String, PathBuf> {
-    let mut wines = HashMap::new();
+#[derive(PartialEq, Eq, PartialOrd, Clone, Copy, Debug)]
+pub enum WineSource {
+    System,
+    PlayOnLinux
+}
+
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct WineVersion {
+    pub version: String,
+    pub is_staging: bool,
+    pub source: WineSource,
+    pub path: PathBuf
+}
+
+impl WineVersion {
+    pub fn new(version: String, source: WineSource, path: PathBuf) -> Self {
+        let is_staging = match version.find(" (Staging)") {
+            Some(_) => true,
+            None => false
+        };
+        WineVersion {
+            version: version,
+            is_staging: is_staging,
+            source: source,
+            path: path
+        }
+    }
+}
+
+pub fn build_wine_versions_list() -> Vec<WineVersion> {
+    let mut wines = vec![];
     macro_rules! trywine {
-        ($path: expr) => (
+        ($path: expr, $source: expr) => (
             let path = $path;
             match get_wine_version(&path) {
-                Some(version) => {wines.insert(version, path);},
+                Some(version) => {wines.push(WineVersion::new(version, $source, path));},
                 None => {}
             }
         )
     }
-    trywine!(PathBuf::from("/usr/bin/wine"));
+    trywine!(PathBuf::from("/usr"), WineSource::System);
     if let Some(homedir) = env::home_dir() {
         //Let's check PoL
         let mut pol: PathBuf = homedir.clone();
@@ -56,49 +86,12 @@ pub fn build_wine_versions_list() -> HashMap<String, PathBuf> {
                     if let Ok(metadata) = dir {
                         let mut path = pol.clone();
                         path.push(metadata.path());
-                        path.push("bin");
-                        path.push("wine");
-                        trywine!(path);
+                        trywine!(path, WineSource::PlayOnLinux);
                     }
                 }
             }
         }
     }
+    wines.sort_by_key(|ref i| i.version.clone());
     wines
-}
-
-pub fn base_game_command(gamedir: PathBuf) -> Command {
-    let mut gamedir = gamedir.clone();
-    gamedir.push("Warframe.exe");
-    let mut cmd = Command::new(find_wine_binary());
-    cmd.args(&[
-        gamedir.to_str().unwrap(),
-        "-log:/wfupdate.log",
-        "-dx10:0",
-        "-dx11:0",
-        "-threadedworker:1",
-        "-cluster:public",
-        "-language:en",
-    ]);
-    cmd
-}
-
-// "C:\Program Files\Warframe\Downloaded\Public\Warframe.exe" -silent -log:/Preprocess.log -dx10:0 -dx11:0 -threadedworker:1 -cluster:public -language:en -applet:/EE/Types/Framework/ContentUpdate
-pub fn build_game_update(gamedir: PathBuf) -> Command {
-    let mut cmd = base_game_command(gamedir);
-    cmd.arg("-applet:/EE/Types/Framework/ContentUpdate");
-    cmd
-}
-
-pub fn build_game_repair(gamedir: PathBuf) -> Command {
-    let mut cmd = base_game_command(gamedir);
-    cmd.arg("-silent").arg("-applet:/EE/Types/Framework/CacheRepair");
-    cmd
-}
-
-// "C:\Program Files\Warframe\Downloaded\Public\Warframe.exe" -dx10:0 -dx11:0 -threadedworker:1 -cluster:public -language:en -fullscreen:0
-pub fn build_game_run(gamedir: PathBuf) -> Command {
-    let mut cmd = base_game_command(gamedir);
-    cmd.arg("-fullscreen:0");
-    cmd
 }

@@ -12,8 +12,8 @@ The Warframe launcher works in two stages, Stage 1, which is done by the origina
 As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've been using to test [here](https://files.zekesonxx.com/Preprocess.log.xz) (2MB uncompressed), which should produce the output `bytes: 7 MB/4 GB 0.156%; files: 395/26212 1.506%`.
 
 # Limitations/Gotchas
-* Can only deal with 32-bit Wine (despite the 64-bit Warframe executable switch and WINEARCH environment variables)
-* Wineserver needs to be running before trying to update the game
+* Can use 64-bit Wine, however as far as I'm aware no-one has gotten the game to work (yet) in 64-bit Wine.
+* Wineserver needs to be running before trying to update the game. This limitation does not apply to running the game.
 
 ##### *Past this point is sort of a mess. I use this README for planning and such, and this way it keeps it around in git.*
 
@@ -63,12 +63,12 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 # Semi-In-Order TODO List
 * [x] Implement a config file
 * [x] Rework the `paths` module
-* [ ] Rework the `wine` module a `run` module (+ allow for future Windows support)
+* [x] Rework the `wine` module a `run` module (+ allow for future Windows support)
   * [x] dx10, dx11, language
   * [x] wineprefix setting
-  * [ ] wine executable setting
-  * [ ] 32bit/64bit switch
-* [ ] Wine version selection
+  * [x] wine executable setting
+  * [x] 32bit/64bit switch
+* [x] Wine version selection
 * [x] DX10/11 switches
 * [ ] Rework the CLI with two-tiered subcommands, split into `cli` module
   * [x] Run
@@ -79,12 +79,12 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 * [ ] GUI
 
 # CLI Release Checklist
-* [ ] Wine executable/LD_LIBRARY_PATH setting
+* [x] Wine executable/LD_LIBRARY_PATH setting
 * [ ] Rework `update` into `cli` module
 * [ ] Add an update check for stage 2 (kill the game at BytesToDownload)
 * [ ] Rework `parse` into `cli` module
 * [ ] Add repair command
-* [ ] Fix up `wine-ver` into `wine`, get into `cli` module, implement setting to config vars
+* [x] Fix up `wine-ver` into `wine`, get into `cli` module, implement setting to config vars
 * [ ] `wfupdate wine winecfg` or something like that
 * [ ] wineserver hosting (run in background as subcommand, stdout/err to /dev/null)
 * [ ] Basic usage guide

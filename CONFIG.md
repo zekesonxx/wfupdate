@@ -12,6 +12,8 @@ Set them by running `wfupdate config set <key> <value>`, ex `wfupdate config set
 ## wine
 * `wineprefix`: `WINEPREFIX` env var to use, for running the game and for finding paths. Defaults to the actual `WINEPREFIX` env var present when running wfupdate, and otherwise to `~/.wine` (use of default wineprefix not recommended).
 * `winearch`: Value to set as `WINEARCH` environment variable. Should be `win32` or `win64`. Defaults to `win32`.
+* `winebin`: Path to the folder containing the Wine binaries to use to run the game. Defaults to `/usr/bin`.
+* `winelib`: Path to the folder (or folders, separated with `:`) containing libraries Wine needs, which will be prepended to `LD_LIBRARY_PATH`. Defaults to nothing.
 
 # Planned (these don't function yet)
 ## game
@@ -21,7 +23,3 @@ Set them by running `wfupdate config set <key> <value>`, ex `wfupdate config set
 * `steam`: Include Steam-specific assets when updating the game.
 * `autorestart`: Takes a positive numerical value. Automatically restart the download if it hasn't downloaded a new file in the number of minutes specified.  
   I would recommend setting this to a reasonably high value relative to your Internet speed, in case it's downloading a big file. Setting this to 0 (or removing it) will disable automatic restarts.
-
-## wine
-* `winebin`: Path to the folder containing the Wine binaries to use to run the game. Defaults to `/usr/bin`.
-* `winelib`: Path to the folder (or folders, separated with `:`) containing libraries Wine needs, which will be prepended to `LD_LIBRARY_PATH`. Defaults to nothing.

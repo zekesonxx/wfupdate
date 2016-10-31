@@ -72,7 +72,7 @@ fn display_parsed(parsed: &Vec<LogLine>) {
 
 fn update_game(wfpath: PathBuf) {
     let mut parsed: Vec<LogLine> = vec![];
-    let mut program = match wine::build_game_update(wfpath)
+    let mut program = match run::build_game_update(wfpath)
     .stdout(Stdio::piped())
     .spawn() {
         Ok(child) => child,
@@ -261,14 +261,12 @@ fn exeupdate(matches: &clap::ArgMatches) {
 }
 
 fn main() {
-    //let mut config = config::get();
-    //config.set_to(Some("wine"), "wineprefix".to_string(), "/media/betterstorage/Other Games/warframe_try2".to_string());
-    //config::set(config);
-    //println!("{:?}", config::parse_configid("wine:wineprefix"));
-    //println!("{:?}", config::parse_configid("encoding"));
-    //println!("{:?}", config::parse_configid("game:dx10"));
     let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).subcommand(cli::run::subcommand()).subcommand(cli::config::subcommand()).get_matches();
+    let matches = App::from_yaml(yaml)
+                       .subcommand(cli::run::subcommand())
+                       .subcommand(cli::config::subcommand())
+                       .subcommand(cli::wine::subcommand())
+                       .get_matches();
 
     if let Some(matches) = matches.subcommand_matches("parse") {
         // Create a path to the desired file
@@ -284,15 +282,8 @@ fn main() {
         };
         parse_file(path);
         return;
-    } else if let Some(matches) = matches.subcommand_matches("wine-ver") {
-        for (version, path) in wine::build_wine_versions_list() {
-            if matches.is_present("paths") {
-                println!("{}: {:?}", version, path);
-            } else {
-                println!("{}", version);
-            }
-        }
-        return;
+    } else if let Some(matches) = matches.subcommand_matches("wine") {
+        cli::wine::run(matches);
     }
 
     let wfpath = match paths::game_install_dir() {

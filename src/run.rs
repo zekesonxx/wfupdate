@@ -18,23 +18,52 @@ pub fn find_wine_binary() -> PathBuf {
 }
 
 #[cfg(unix)]
+pub fn wine_cmd() -> Command {
+    let config = config::get();
+    // First, we need the Wine binary path
+    let wine = {
+        let is64bit = config::parse_bool(config.get_from(Some("game"), "64bit"));
+        if let Some(winebin) = config.get_from(Some("wine"), "winebin") {
+            let mut path = PathBuf::from(winebin);
+            path.push(if is64bit {"wine64"} else {"wine"});
+            path
+        } else {
+            match env::var("WINE") {
+                Ok(winepath) => {
+                    let winepath = PathBuf::from(winepath);
+                    if winepath.metadata().is_ok() {
+                        winepath
+                    } else {
+                        PathBuf::from("wine")
+                    }
+                },
+                Err(_) => PathBuf::from("wine")
+            }
+        }
+    };
+    let mut cmd = Command::new(wine);
+    cmd.env("WINEPREFIX", paths::wine::wineprefix().as_os_str());
+    cmd.env("WINEARCH", config.get_from(Some("wine"), "winearch").unwrap_or("win32"));
+    if let Some(ldpath) = config.get_from(Some("wine"), "winelib") {
+        cmd.env("LD_LIBRARY_PATH", format!("{} {}", ldpath, env::var("LD_LIBRARY_PATH").unwrap_or(String::new())));
+    }
+    cmd
+}
+
+#[cfg(unix)]
 pub fn game_executable(gamedir: PathBuf) -> Command{
     let mut gamedir = gamedir.clone();
     let config = config::get();
     gamedir.push(if config::parse_bool(config.get_from(Some("game"), "64bit")) {"Warframe.x64.exe"} else {"Warframe.exe"});
-    let mut cmd = Command::new(find_wine_binary());
+    let mut cmd = wine_cmd();
     cmd.arg(gamedir.to_str().unwrap());
-    cmd.env("WINEPREFIX", paths::wine::wineprefix().as_os_str());
-    cmd.env("WINEARCH", config.get_from(Some("wine"), "winearch").unwrap_or("win32"));
     cmd
 }
 
 #[cfg(unix)]
 pub fn launcher_executable(launcherpath: PathBuf) -> Command {
-    let mut cmd = Command::new(find_wine_binary());
+    let mut cmd = wine_cmd();
     cmd.arg(launcherpath.to_str().unwrap());
-    cmd.env("WINEPREFIX", paths::wine::wineprefix().as_os_str());
-    cmd.env("WINEARCH", config::get().get_from(Some("wine"), "winearch").unwrap_or("win32"));
     cmd
 }
 

@@ -2,9 +2,8 @@ name: wfupdate
 version: 0.1.0
 about: Warframe Dealwither
 setting: ArgRequiredElseHelp
+setting: VersionlessSubcommands
 subcommands:
-  - update:
-      about: Wraps Warframe and updates the game
   - parse:
       about: Parses a Preprocess.log file for information
       args:
@@ -12,47 +11,3 @@ subcommands:
             help: The Preprocess.log file to parse
             required: false
             index: 1
-  - wine-ver:
-      about: Lists available Wine versions
-      args:
-        - paths:
-            short: p
-            long: paths
-            help: Include Wine paths in the output
-            required: false
-  - checkupdate:
-      about: Outputs a list of files that need to be updated
-      args:
-        - full:
-            long: full
-            help: Check Warframe game assets as well. This involves md5 hashing over 35GB! Use with caution.
-        - verbose:
-            short: v
-            long: verbose
-            help: Output information about all files checked, instead of just outputting ones that need updates.
-        - 64bit:
-            short: "6"
-            long: 64bit
-            help: Check for 64-bit files, not just 32-bit ones
-        - steam:
-            short: s
-            long: steam
-            help: Check for updates with Steam-related files.
-  - exeupdate:
-      about: Performs a Stage 1 Update
-      args:
-        - full:
-            long: full
-            help: Check Warframe game assets as well. This involves md5 hashing over 35GB! Use with caution.
-        - verbose:
-            short: v
-            long: verbose
-            help: Output information about all files checked, instead of just outputting ones that need updates.
-        - 64bit:
-            short: "6"
-            long: 64bit
-            help: Check for 64-bit files, not just 32-bit ones
-        - steam:
-            short: s
-            long: steam
-            help: Check for updates with Steam-related files.

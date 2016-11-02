@@ -13,7 +13,6 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 
 # Limitations/Gotchas
 * Can use 64-bit Wine, however as far as I'm aware no-one has gotten the game to work (yet) in 64-bit Wine.
-* Wineserver needs to be running before trying to update the game. This limitation does not apply to running the game.
 
 ##### *Past this point is sort of a mess. I use this README for planning and such, and this way it keeps it around in git.*
 
@@ -73,18 +72,17 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 * [ ] Rework the CLI with two-tiered subcommands, split into `cli` module
   * [x] Run
   * [x] Config
-  * [ ] Update
+  * [x] Update
   * [ ] Housekeeping (repair/"optimize")
 * [ ] Game setup from scratch
 * [ ] GUI
 
 # CLI Release Checklist
 * [x] Wine executable/LD_LIBRARY_PATH setting
-* [ ] Rework `update` into `cli` module
-* [ ] Add an update check for stage 2 (kill the game at BytesToDownload)
+* [x] Rework `update` into `cli` module
+* [x] Add an update check for stage 2 (kill the game at BytesToDownload)
 * [ ] Rework `parse` into `cli` module
 * [ ] Add repair command
 * [x] Fix up `wine-ver` into `wine`, get into `cli` module, implement setting to config vars
 * [x] `wfupdate wine winecfg` or something like that
-* [ ] wineserver hosting (run in background as subcommand, stdout/err to /dev/null)
 * [ ] Basic usage guide

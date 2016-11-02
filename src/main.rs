@@ -18,10 +18,9 @@ pub mod cli;
 pub mod run;
 
 use std::error::Error;
-use std::fs::{File, create_dir_all};
+use std::fs::File;
 use std::io::prelude::*;
-use std::io::BufReader;
-use std::process::{Stdio, exit};
+use std::process::exit;
 use std::path::PathBuf;
 use logparser::LogLine;
 use bytesize::ByteSize;
@@ -67,48 +66,9 @@ fn display_parsed(parsed: &Vec<LogLine>) {
 
     let bytes = format!("bytes: {}/{} {}%", ByteSize::b(downloaded_bytes as usize), ByteSize::b(total_bytes as usize), percentage(downloaded_bytes, total_bytes));
     let filecount = format!("files: {}/{} {}%", downloaded_files, total_files, percentage(downloaded_files, total_files));
-    print!("\x1b[0K\r{}; {}", bytes, filecount);
+    println!("{}; {}", bytes, filecount);
 }
 
-fn update_game(wfpath: PathBuf) {
-    let mut parsed: Vec<LogLine> = vec![];
-    let mut program = match run::build_game_update(wfpath)
-    .stdout(Stdio::piped())
-    .spawn() {
-        Ok(child) => child,
-        Err(_) => {
-            println!("Cannot run Warframe to update");
-            return;
-        },
-    };
-    match program.stdout.as_mut() {
-        Some(out) => {
-            let buf_reader = BufReader::new(out);
-            for line in buf_reader.lines() {
-                match line {
-                    Ok(l) => {
-                        //println!("{}", l);
-                        let parsedline = logparser::parse_line(l.as_str());
-                        let mut parse = true;
-                        if let LogLine::Unknown(_) = parsedline {
-                            parse = false;
-                        } else if let LogLine::UsedShared(_, ref name) = parsedline {
-                            if name.ends_with(".bin") {
-                                parse = false;
-                            }
-                        }
-                        if parse {
-                            parsed.push(parsedline);
-                            display_parsed(&parsed);
-                        }
-                    },
-                    Err(_) => return,
-                };
-            }
-        },
-        None => return,
-    }
-}
 
 fn parse_file(path: PathBuf) {
     let display = path.display();
@@ -136,136 +96,13 @@ fn parse_file(path: PathBuf) {
     display_parsed(&parsed);
 }
 
-fn checkupdate(matches: &clap::ArgMatches) {
-    use exeupdate::FileType::*;
-    let index = match exeupdate::downloader::get_index() {
-        Ok(index) => index,
-        Err(_) => {
-            println!("Failed to get Warframe file list. Are you connected to the internet?");
-            exit(1);
-        }
-    };
-    let parsed = match exeupdate::parser::parse_file_list(index) {
-        Ok(list) => list,
-        Err(_) => {
-            println!("Failed to parse Warframe file list. Did DE change something?");
-            exit(1);
-        }
-    };
-    let verbose = matches.is_present("verbose");
-    for item in parsed {
-        let check = match exeupdate::parser::categorize(&item) {
-            Exe32Bit | LauncherAsset => true,
-            SteamAsset => matches.is_present("steam"),
-            GameAsset => matches.is_present("full"),
-            Exe64Bit => matches.is_present("64bit"),
-            Unknown => true
-        } || matches.is_present("full");
-        let display_path = item.disk_path.clone();
-        if !check {
-            if verbose {
-                println!("SKIP {}", display_path);
-            }
-        } else {
-            match exeupdate::checker::check_file(&item) {
-                Ok(needs_update) => {
-                    if needs_update {
-                        if verbose {
-                            println!("OUTD {}", display_path); //uptodate outofdate
-                        } else {
-                            println!("{}", display_path);
-                        }
-                    } else {
-                        if verbose {
-                            println!("OK   {}", display_path);
-                        }
-                    }
-                },
-                Err(err) => {
-                    println!("ERR  {}", display_path);
-                    println!("     {}", err);
-                }
-            }
-        }
-    }
-}
-
-fn exeupdate(matches: &clap::ArgMatches) {
-    use exeupdate::FileType::*;
-    println!("Downloading file list...");
-    let index = match exeupdate::downloader::get_index() {
-        Ok(index) => index,
-        Err(_) => {
-            println!("Failed to get Warframe file list. Are you connected to the internet?");
-            exit(1);
-        }
-    };
-    let parsed = match exeupdate::parser::parse_file_list(index) {
-        Ok(list) => list,
-        Err(_) => {
-            println!("Failed to parse Warframe file list. Did DE change something?");
-            exit(1);
-        }
-    };
-    let mut to_update: Vec<exeupdate::File> = vec![];
-    println!("Checking files...");
-    for item in parsed {
-        let check = match exeupdate::parser::categorize(&item) {
-            Exe32Bit | LauncherAsset => true,
-            SteamAsset => matches.is_present("steam"),
-            GameAsset => matches.is_present("full"),
-            Exe64Bit => matches.is_present("64bit"),
-            Unknown => true
-        } || matches.is_present("full");
-        let display_path = item.disk_path.clone();
-        if check {
-            match exeupdate::checker::check_file(&item) {
-                Ok(needs_update) => {
-                    if needs_update {
-                        to_update.push(item);
-                    }
-                },
-                Err(err) => {
-                    println!("Failed to check {}", display_path);
-                    println!("{}", err);
-                }
-            }
-        }
-    }
-    println!("{} file{} to update", to_update.len(), if to_update.len() != 1 {"s"} else {""});
-    for file in to_update {
-        let display = file.disk_path.clone();
-        println!("Downloading {} ({})", display, bytesize::ByteSize::b(file.size as usize));
-        let newcontent = match exeupdate::downloader::get_file(file.download_path) {
-            Ok(content) => content,
-            Err(err) => {
-                println!("Failed to download {}", display);
-                println!("{:?}", err);
-                exit(1);
-            }
-        };
-        println!("Applying updated file");
-        let disk_path = paths::realize_path(file.disk_path).unwrap();
-        create_dir_all(disk_path.parent().unwrap()).unwrap();
-        match exeupdate::update::update_file(disk_path, newcontent) {
-            Ok(_) => {
-                println!("File successfully updated");
-            },
-            Err(err) => {
-                println!("Failed to update {}", display);
-                println!("{:?}", err);
-                exit(1);
-            }
-        };
-    }
-}
-
 fn main() {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml)
                        .subcommand(cli::run::subcommand())
                        .subcommand(cli::config::subcommand())
                        .subcommand(cli::wine::subcommand())
+                       .subcommand(cli::update::subcommand())
                        .get_matches();
 
     if let Some(matches) = matches.subcommand_matches("parse") {
@@ -284,25 +121,11 @@ fn main() {
         return;
     } else if let Some(matches) = matches.subcommand_matches("wine") {
         cli::wine::run(matches);
-    }
-
-    let wfpath = match paths::game_install_dir() {
-        Some(path) => path,
-        None => {
-            println!("Can't find Warframe! Is $WINEPREFIX set?");
-            exit(1);
-        }
-    };
-
-    if let Some(_) = matches.subcommand_matches("update") {
-        update_game(wfpath);
+    } else if let Some(matches) = matches.subcommand_matches("update") {
+        cli::update::run(matches);
     } else if let Some(matches) = matches.subcommand_matches("run") {
         cli::run::run(matches);
     } else if let Some(matches) = matches.subcommand_matches("config") {
         cli::config::run(matches);
-    } else if let Some(matches) = matches.subcommand_matches("checkupdate") {
-        checkupdate(matches);
-    } else if let Some(matches) = matches.subcommand_matches("exeupdate") {
-        exeupdate(matches);
     }
 }

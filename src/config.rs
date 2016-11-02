@@ -29,7 +29,7 @@ pub fn parse_configid(input: &str) -> (Option<String>, String) {
         Some(pos) => {
             let slice = input.split_at(pos);
             // .split_at(1).1 is a cheap trick to remove the first character of a string
-            return (Some(slice.0.to_string()), slice.1.split_at(1).1.to_string());
+            return (Some(slice.0.to_string()), slice.1.split_at(1).1.trim_left_matches(':').to_string());
         },
         None => {
             return (None, String::from(input));

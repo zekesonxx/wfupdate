@@ -157,8 +157,8 @@ fn stage2_check(matches: &clap::ArgMatches, wfpath: PathBuf) -> bool {
                         if let LogLine::BytesToDownload(bytes) = parsedline {
                             let _ = program.kill();
                             if !matches.is_present("silent") {
-                                println!("{} file{}, {} bytes", files,
-                                         if files != 1 {"s"} else {""}, bytes);
+                                println!("{} file{}, {}", files,
+                                         if files != 1 {"s"} else {""}, ByteSize::b(bytes as usize));
                             }
                             return true;
                         } else if let LogLine::HashMismatch(_) = parsedline {

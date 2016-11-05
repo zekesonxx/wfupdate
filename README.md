@@ -85,4 +85,16 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 * [ ] Add repair command
 * [x] Fix up `wine-ver` into `wine`, get into `cli` module, implement setting to config vars
 * [x] `wfupdate wine winecfg` or something like that
+* [ ] Crash Watchdog
 * [ ] Basic usage guide
+
+
+## Post-CLI Release Checklist
+* [ ] Fix the awful and broken config file system
+* [ ] Refactoring
+  * [ ] Imports
+  * [ ] Make an update module
+  * [ ] Do some DRY improvements
+* [ ] Fix the horribly fragmented CLI flags
+* [ ] Fix wfpath dealing with
+* [ ] Cache stage 1 `index.txt`

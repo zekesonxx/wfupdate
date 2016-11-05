@@ -63,7 +63,7 @@ $ rg 'Applet' strings.txt
 182165:DedicatedServerApplet::PreInitialize -- not enough arguments
 ```
 
-Heeeey! Here we go. If we exclude the things that pretty obviously aren't applets, we get 9: `ScriptApplet`, `GameApplet`, `CacheRepairApplet`, `CrashApplet`, `ContentUpdateApplet`, `CacheCfgApplet`, `CacheCleanerApplet`, `CacheDefraggerApplet`, and `DedicatedServerApplet`. We already know what two of them do (`CacheRepair` and `ContentUpdate`), and I'm pretty sure `CacheDefragger` is the "optimize" button in the launcher. Let's look at the others.
+Heeeey! Here we go. If we exclude the things that pretty obviously aren't applets, we get 9: `ScriptApplet`, `GameApplet`, `CacheRepairApplet`, `CrashApplet`, `ContentUpdateApplet`, `CacheCfgApplet`, `CacheCleanerApplet`, `CacheDefraggerApplet`, and `DedicatedServerApplet`. We already know what three of them do (`CacheRepair`, `CacheDefragger`, and `ContentUpdate`), so let's look at the others.
 
 All of them fail with the same error:
 ```

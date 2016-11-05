@@ -103,6 +103,7 @@ fn main() {
                        .subcommand(cli::config::subcommand())
                        .subcommand(cli::wine::subcommand())
                        .subcommand(cli::update::subcommand())
+                       .subcommand(cli::repair::subcommand())
                        .get_matches();
 
     if let Some(matches) = matches.subcommand_matches("parse") {
@@ -127,5 +128,7 @@ fn main() {
         cli::run::run(matches);
     } else if let Some(matches) = matches.subcommand_matches("config") {
         cli::config::run(matches);
+    } else if let Some(matches) = matches.subcommand_matches("repair") {
+        cli::repair::run(matches);
     }
 }

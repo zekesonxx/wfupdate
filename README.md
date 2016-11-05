@@ -32,8 +32,8 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
     * [x] Stage 2 Updating (running `Warframe.exe`)
       * [ ] Automatic restart if the download stalls
     * [ ] Git tracking of file changes
-  * [ ] Repairing
-  * [ ] "Optimizing", whatever the fuck that is
+  * [x] Repairing
+  * [x] "Optimizing", whatever the fuck that is
 * [ ] ~~Launcher:~~
   * Not needed, thanks to REing the launcher protocol.
   * Should be able to operate 100% Launcherless
@@ -69,11 +69,11 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
   * [x] 32bit/64bit switch
 * [x] Wine version selection
 * [x] DX10/11 switches
-* [ ] Rework the CLI with two-tiered subcommands, split into `cli` module
+* [x] Rework the CLI with two-tiered subcommands, split into `cli` module
   * [x] Run
   * [x] Config
   * [x] Update
-  * [ ] Housekeeping (repair/"optimize")
+  * [x] Housekeeping (repair/"optimize")
 * [ ] Game setup from scratch
 * [ ] GUI
 
@@ -82,7 +82,7 @@ As for the log parsing part of it, I've stuck a xz-compressed copy of a log I've
 * [x] Rework `update` into `cli` module
 * [x] Add an update check for stage 2 (kill the game at BytesToDownload)
 * [ ] Rework `parse` into `cli` module
-* [ ] Add repair command
+* [x] Add repair command
 * [x] Fix up `wine-ver` into `wine`, get into `cli` module, implement setting to config vars
 * [x] `wfupdate wine winecfg` or something like that
 * [ ] Crash Watchdog

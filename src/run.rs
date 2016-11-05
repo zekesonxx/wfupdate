@@ -96,7 +96,13 @@ pub fn build_game_update(gamedir: PathBuf) -> Command {
 
 pub fn build_game_repair(gamedir: PathBuf) -> Command {
     let mut cmd = base_game_command(gamedir);
-    cmd.arg("-silent").arg("-applet:/EE/Types/Framework/CacheRepair");
+    cmd.arg("-applet:/EE/Types/Framework/CacheRepair");
+    cmd
+}
+
+pub fn build_game_defrag(gamedir: PathBuf) -> Command {
+    let mut cmd = base_game_command(gamedir);
+    cmd.arg("-applet:/EE/Types/Framework/CacheDefragger");
     cmd
 }
 

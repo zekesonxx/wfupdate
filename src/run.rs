@@ -3,6 +3,7 @@ use std::process::Command;
 use std::path::PathBuf;
 use config;
 use paths;
+use time;
 
 pub fn find_wine_binary() -> PathBuf {
     match env::var("WINE").or(env::var("WARFRAMEWINE")) {
@@ -71,10 +72,14 @@ pub fn base_game_command(gamedir: PathBuf) -> Command {
     let mut cmd = game_executable(gamedir);
     let config = config::get();
     cmd.args(&[
-        "-log:/wfupdate.log",
         "-threadedworker:1",
         "-cluster:public",
     ]);
+    cmd.arg(if config::parse_bool(config.get_from(Some("game"), "logtime")) {
+                format!("-log:/wfupdate-{}.log", time::now().strftime("%s").unwrap())
+            } else {
+                "-log:/wfupdate.log".to_string()
+            });
     cmd.arg(match config.get_from(Some("game"), "dx10") {
         Some("true") | Some("1") => "-dx10:1",
         None | _ => "-dx10:0",

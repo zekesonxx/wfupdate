@@ -22,3 +22,7 @@ time = "0.1"
 default-features = false
 features = ["color", "yaml"]
 version = "2.15"
+
+[dependencies.encoding]
+version = "0.2.33"
+#features = ["no-optimized-legacy-encoding"]

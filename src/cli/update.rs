@@ -8,6 +8,9 @@ use std::io::BufReader;
 use std::fs::create_dir_all;
 use bytesize;
 use bytesize::ByteSize;
+use encoding::{Encoding, DecoderTrap};
+use encoding::all::WINDOWS_1251;
+
 
 pub fn subcommand<'a, 'b>() -> clap::App<'a, 'b> {
     clap_app!(@subcommand update =>
@@ -259,33 +262,50 @@ fn stage2_update(matches: &clap::ArgMatches, wfpath: PathBuf) {
     };
     match program.stdout.as_mut() {
         Some(out) => {
-            let buf_reader = BufReader::new(out);
-            for line in buf_reader.lines() {
-                match line {
-                    Ok(l) => {
-                        if matches.is_present("rawlines") {
-                            println!("{}", l);
-                        }
-                        let parsedline = logparser::parse_line(l.as_str());
-                        let mut parse = true;
-                        if let LogLine::Unknown(_) = parsedline {
-                            parse = false;
-                        } else if let LogLine::UsedShared(_, ref name) = parsedline {
-                            if name.ends_with(".bin") {
-                                parse = false;
-                            }
-                        }
-                        if parse {
-                            parsed.push(parsedline);
-                            if matches.is_present("rawlines") {
-                                println!("{}", display_parsed(&parsed));
-                            } else {
-                                print!("\x1b[0K\r{}", display_parsed(&parsed));
-                            }
-                        }
-                    },
-                    Err(_) => return,
-                };
+            let mut buf_reader = BufReader::new(out);
+            // This is using buf_reader.read_until() and manually parsing it into lines.
+            // The original version used buf_reader.lines(), however the game spits out Windows-1251, not UTF8.
+            // And sometimes it spits out a non ASCII character, which would break the original version.
+            // So, we manually parse it into lines and then decode it.
+            loop {
+                let mut buffer: Vec<u8> = vec![];
+                if buf_reader.read_until(b'\n', &mut buffer).expect("stdout error") == 0 {
+                    // This prevents this from getting into an infinite loop of reading EOFs
+                    break;
+                }
+
+                let l = WINDOWS_1251.decode(buffer.as_slice(), DecoderTrap::Replace).unwrap();
+                let l = l.trim_matches('\r');
+
+                //the game spits out newlines a lot for no reason.
+                if l.len() == 0 {
+                    continue;
+                }
+
+                //End the line parsing logic, begin actual update tracking logic
+
+                if matches.is_present("rawlines") {
+                    println!("{}", l);
+                }
+                let parsedline = logparser::parse_line(&*l);
+                let mut parse = true;
+                if let LogLine::Unknown(_) = parsedline {
+                    parse = false;
+                } else if let LogLine::UsedShared(_, ref name) = parsedline {
+                    if name.ends_with(".bin") {
+                        parse = false;
+                    }
+                }
+                if parse {
+                    parsed.push(parsedline);
+                    if matches.is_present("rawlines") {
+                        println!("{}", display_parsed(&parsed));
+                    } else {
+                        // This uses ANSI terminal escapes to keep it all on one line.
+                        // (making it look nicer)
+                        print!("\x1b[0K\r{}", display_parsed(&parsed));
+                    }
+                }
             }
         },
         None => return,

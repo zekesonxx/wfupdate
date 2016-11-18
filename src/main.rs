@@ -10,6 +10,7 @@ extern crate hex;
 extern crate xdg;
 extern crate ini;
 extern crate time;
+extern crate encoding;
 pub mod logparser;
 pub mod paths;
 pub mod wine;
